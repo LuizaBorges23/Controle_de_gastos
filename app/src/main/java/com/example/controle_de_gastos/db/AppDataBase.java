@@ -1,0 +1,32 @@
+package com.example.controle_de_gastos.db;
+import android.content.Context;
+
+import androidx.room.Database;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import com.example.controle_de_gastos.model.Transaction;
+
+@Database(entities = {Transaction.class}, version = 1, exportSchema = false)
+public abstract class AppDataBase extends RoomDatabase {
+    public abstract TransactionDao transactionDao();
+
+    private static volatile AppDataBase INSTANCE;
+    private static final int NUMBER_OF_THREADS = 4;
+    public static final ExecutorService databaseWriteExecutor =
+            Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+
+    public static AppDataBase getDatabase(final Context context) {
+        if (INSTANCE == null) {
+            synchronized (AppDataBase.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
+                                    AppDataBase.class, "finance_database")
+                            .build();
+                }
+            }
+        }
+        return INSTANCE;
+    }
+}
